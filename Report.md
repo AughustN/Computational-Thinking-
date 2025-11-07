@@ -185,10 +185,10 @@ How to calculate and find the shortest path between any two coordinates (longitu
 
 ## 🚀 8. Execution Plan
 
-| No. | Task | Objective | Expected Output | Status |
-|-----|------|------------|----------------|--------|
-| 1 | OSM API Integrate | Integrate Overpass & Nominatim APIs | JSON files, stable choose_location() | ✅ Completed |
-| 2 | Routing Algorithm | Implement full A* and graph builder | find_shortest_path() functional | ✅ Completed |
-| 3 | Performance Testing | Verify speed < 3s and accuracy | Test report | 🔜 Next |
+| No. | Task | Objective | Expected Output | Date | Status |
+|-----|------|------------|----------------|------|--------|
+| 1 | OSM API Integrate | Integrate Overpass & Nominatim APIs | JSON files, stable choose_location() | 2–3/11/2025 | ✅ Completed |
+| 2 | Routing Algorithm | Implement full A* and graph builder | find_shortest_path() functional | 4/11/2025 | ✅ Completed |
+| 3 | Performance Testing | Verify speed < 3s and accuracy | Test report | 9/11/2025 | 🔜 Next |
 
 ---

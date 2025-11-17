@@ -23,19 +23,20 @@ const useStyles = makeStyles(theme => ({
         backgroundColor: '#f5f5f5',
         position: 'relative',
     },
-    mapContainer: { width: '100%', height: '100%' },
+    mapContainer: { width: '100%', height: '100%', position: 'relative', zIndex: 1 },
     searchBarContainer: {
         position: 'fixed',
-        top: '15px',
+        top: '80px', // Tăng lên để tránh header
         left: '70px',
-        zIndex: 9999,
-        width: '320px',
+        zIndex: 999, // Giảm xuống để không che layer control
+        width: '350px',
         pointerEvents: 'auto',
     },
     searchField: {
         backgroundColor: '#fff',
         borderRadius: '8px',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)', // Shadow đậm hơn
+        border: '2px solid #0277BD', // Viền xanh nổi bật
         '& .MuiOutlinedInput-root': { borderRadius: '8px' },
     },
     searchDropdown: {
@@ -60,7 +61,7 @@ const useStyles = makeStyles(theme => ({
         height: "100vh",
         width: 400,
         background: "#fff",
-        zIndex: 2000,
+        zIndex: 999, // Giảm xuống để không che layer control
         boxShadow: "2px 0 16px rgba(0,0,0,0.2)",
         display: "flex",
         flexDirection: "column",

@@ -47,6 +47,22 @@ function Header({ darkMode, onToggleDarkMode }) {
           >
             Bus Map
           </button>
+
+          <button
+            onClick={() => navigate("/cameras")}
+            style={{
+              background: location.pathname === "/cameras" ? "#fff" : "transparent",
+              color: location.pathname === "/cameras" ? "#667eea" : "#fff",
+              border: "none",
+              padding: "8px 16px",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontWeight: "500",
+              fontSize: "16px"
+            }}
+          >
+            Traffic Cameras
+          </button>
         </Box>
 
         {/* Dark mode toggle — right side */}

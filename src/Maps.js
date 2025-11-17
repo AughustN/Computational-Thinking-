@@ -3,12 +3,12 @@ import {
   MapContainer,
   Marker,
   Popup,
-  TileLayer,
   Polyline,
   useMap,
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import MapLayerControl from "./MapLayerControl";
 
 const icon = L.icon({
   iconUrl: "./placeholder.png",
@@ -64,10 +64,7 @@ export default function Maps({ origin, destination, coords }) {
       zoom={12}
       style={{ width: "100%", height: "100%" }}
     >
-      <TileLayer 
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      />
+      <MapLayerControl />
 
       {/* Marker điểm bắt đầu */}
       {origin && (

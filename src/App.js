@@ -4,6 +4,7 @@ import { ThemeProvider, createTheme } from "@material-ui/core/styles";
 import Header_v2 from "./Header_v2";
 import RoutesPage from "./pages/RoutesPage";
 import BusMapPage from "./pages/BusMapPage";
+import CameraMap from "./CameraMap";
 import { Box } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 
@@ -151,6 +152,7 @@ function App() {
               <Route path="/" element={<RoutesPage darkMode={darkMode} />} />
               <Route path="/routes" element={<RoutesPage darkMode={darkMode} />} />
               <Route path="/busmap" element={<BusMapPage darkMode={darkMode} />} />
+              <Route path="/cameras" element={<CameraMap />} />
             </Routes>
           </Box>
         </Box>

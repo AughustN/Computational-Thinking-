@@ -18,6 +18,8 @@ const useStyles = makeStyles(theme => ({
     overflow: 'hidden',
   },
   mapContainer: {
+    position: 'relative',
+    zIndex: 1,
     [theme.breakpoints.down('sm')]: {
       height: '60%',
     },

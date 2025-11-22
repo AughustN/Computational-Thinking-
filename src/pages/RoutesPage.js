@@ -1,13 +1,14 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import {
     Box, Paper, IconButton, TextField, List,
-    ListItem, ListItemIcon, ListItemText, Typography
+    ListItem, ListItemIcon, ListItemText, Typography, Fab
 } from '@material-ui/core';
 
 import { makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@material-ui/icons/Close';
 import SearchIcon from '@material-ui/icons/Search';
 import LocationOnIcon from '@material-ui/icons/LocationOn';
+import MenuIcon from '@material-ui/icons/Menu';
 import { useLocation } from 'react-router-dom';
 
 import GoongMap from '../GoongMap';
@@ -22,10 +23,13 @@ dayjs.extend(timezone)
 const useStyles = makeStyles(theme => ({
     root: {
         display: 'flex',
-        height: '100vh',
+        height: 'calc(100vh - 50px)',
         overflow: 'hidden',
         backgroundColor: '#f5f5f5',
         position: 'relative',
+        [theme.breakpoints.down('sm')]: {
+            height: 'calc(100vh - 56px)',
+        },
     },
     mapContainer: { width: '100%', height: '100%', position: 'relative', zIndex: 1 },
     searchBarContainer: {
@@ -33,7 +37,26 @@ const useStyles = makeStyles(theme => ({
         top: '70px',
         left: '100px',
         zIndex: 999,
-        pointerEvents: 'none', // Container không chặn click
+        pointerEvents: 'none',
+        [theme.breakpoints.down('sm')]: {
+            left: '10px',
+            right: '10px',
+            top: '70px',
+        },
+    },
+    openSidebarButton: {
+        position: 'fixed',
+        top: 140,
+        left: 20,
+        zIndex: 998,
+        backgroundColor: '#6ac5faff',
+        color: 'white',
+        '&:hover': {
+            backgroundColor: '#01579B',
+        },
+        [theme.breakpoints.up('md')]: {
+            display: 'none',
+        },
     },
     searchField: {
         width: '280px',
@@ -80,18 +103,26 @@ const useStyles = makeStyles(theme => ({
     },
     sidebarContainer: {
         position: "fixed",
-        top: 0,
+        top: 50,
         left: 0,
-        height: "100vh",
+        height: "calc(100vh - 56px)",
         width: 400,
         background: "#fff",
-        zIndex: 999, // Giảm xuống để không che layer control
+        zIndex: 999,
         boxShadow: "2px 0 16px rgba(0,0,0,0.2)",
         display: "flex",
         flexDirection: "column",
         transition: "transform 0.35s ease",
-        paddingTop: "50px",
+        [theme.breakpoints.down('sm')]: {
+            width: '100%',
+            maxWidth: '320px',
+            transform: 'translateX(-100%)',
+            '&.open': {
+                transform: 'translateX(0)',
+            },
+        },
     },
+
     sidebarHeader: {
         padding: "14px 16px",
         display: "flex",
@@ -99,7 +130,10 @@ const useStyles = makeStyles(theme => ({
         alignItems: "center",
         borderBottom: "1px solid #e0e0e0",
     },
-    toggleButton: { background: "#f2f5f7", borderRadius: 8 },
+    toggleButton: { 
+        background: "#f2f5f7", 
+        borderRadius: 8,
+    },
     sidebarTitle: { fontSize: 18, fontWeight: "bold", color: "#0277BD" },
     sidebarContent: { 
         padding: "16px", 
@@ -121,8 +155,18 @@ const useStyles = makeStyles(theme => ({
         },
     },
     "@global": {
-        ".open": { transform: "translateX(0)" },
-        ".closed": { transform: "translateX(-85%)" },
+        ".open": { 
+            transform: "translateX(0)",
+            [theme.breakpoints.up('md')]: {
+                transform: "translateX(0)",
+            },
+        },
+        ".closed": { 
+            transform: "translateX(-85%)",
+            [theme.breakpoints.down('sm')]: {
+                transform: "translateX(-100%)",
+            },
+        },
     },
 }));
 
@@ -135,7 +179,7 @@ function RoutesPage() {
     const [coords, setCoords] = useState([]);
     const [distance, setDistance] = useState(null);
     const [duration, setDuration] = useState(null);
-    const [openModal, setOpenModal] = useState(false);
+    const [openModal, setOpenModal] = useState(window.innerWidth >= 960); // Open on desktop, closed on mobile
     const [showSearchDropdown, setShowSearchDropdown] = useState(false);
     const [searchInput, setSearchInput] = useState('');
     const [debounceText, setDebounceText] = useState('');
@@ -299,6 +343,17 @@ function RoutesPage() {
 
     return (
         <Box className={classes.root}>
+            {/* Open Sidebar Button (Mobile only, hidden when sidebar is open) */}
+            {!openModal && (
+                <Fab
+                    className={classes.openSidebarButton}
+                    onClick={() => setOpenModal(true)}
+                    aria-label="open menu"
+                >
+                    <MenuIcon />
+                </Fab>
+            )}
+
             {/* Full Screen Map */}
             <Box className={classes.mapContainer}>
                 <GoongMap

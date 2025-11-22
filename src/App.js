@@ -118,6 +118,10 @@ const useStyles = makeStyles((theme) => ({
     overflow: "hidden",
     backgroundColor: theme.palette.background.default,
     transition: "background-color 0.3s ease, color 0.3s ease",
+    marginTop: 50,
+    [theme.breakpoints.down('sm')]: {
+      marginTop: 56,
+    },
   },
 }));
 

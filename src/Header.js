@@ -1,12 +1,17 @@
 import React from "react";
-import { AppBar, Toolbar, Typography, Box, IconButton, Tabs, Tab, makeStyles, Button, Menu, MenuItem, Avatar } from "@material-ui/core";
-import { Brightness4, Brightness7, AccountCircle, History } from "@material-ui/icons";
+import { AppBar, Toolbar, Typography, Box, IconButton, Tabs, Tab, makeStyles, Button, Menu, MenuItem, Avatar, Drawer, List, ListItem, ListItemText, Divider } from "@material-ui/core";
+import { Brightness4, Brightness7, AccountCircle, History, Menu as MenuIcon } from "@material-ui/icons";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
-    background: "linear-gradient(135deg, #ffffffff 0%, #a5a6afff 100%)", // Darker, more professional blue
+    background: "linear-gradient(135deg, #498ac7ff 0%, #a5a6afff 100%)",
     boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1300,
   },
   toolbar: {
     display: "flex",
@@ -15,6 +20,11 @@ const useStyles = makeStyles((theme) => ({
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(2),
     minHeight: 50,
+    [theme.breakpoints.down('sm')]: {
+      minHeight: 56,
+      paddingLeft: theme.spacing(1),
+      paddingRight: theme.spacing(1),
+    },
   },
   logoSection: {
     display: "flex",
@@ -32,6 +42,33 @@ const useStyles = makeStyles((theme) => ({
     background: "linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
+    [theme.breakpoints.down('sm')]: {
+      fontSize: "1.1rem",
+    },
+  },
+  mobileMenuButton: {
+    display: 'none',
+    [theme.breakpoints.down('sm')]: {
+      display: 'block',
+    },
+  },
+  drawerPaper: {
+    width: 250,
+    paddingTop: theme.spacing(2),
+  },
+  drawerItem: {
+    padding: '12px 24px',
+    '&:hover': {
+      backgroundColor: 'rgba(2, 119, 189, 0.08)',
+    },
+  },
+  activeDrawerItem: {
+    backgroundColor: 'rgba(2, 119, 189, 0.15)',
+    borderLeft: '4px solid #0277BD',
+    '& .MuiListItemText-primary': {
+      fontWeight: 600,
+      color: '#0277BD',
+    },
   },
   tabs: {
     marginLeft: theme.spacing(4),
@@ -39,6 +76,9 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: "#FF8E53",
       height: 3,
       borderRadius: 3,
+    },
+    [theme.breakpoints.down('sm')]: {
+      display: 'none',
     },
   },
   tab: {
@@ -91,6 +131,7 @@ export default function Header({ darkMode, onToggleDarkMode }) {
   const location = useLocation();
   const [username, setUsername] = React.useState(localStorage.getItem('username'));
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   React.useEffect(() => {
     const handleAuthChange = () => {
@@ -134,14 +175,25 @@ export default function Header({ darkMode, onToggleDarkMode }) {
   };
 
   return (
-    <AppBar position="static" className={classes.appBar}>
-      <Toolbar className={classes.toolbar}>
-        {/* Left Section: Logo & Title */}
-        <Box className={classes.logoSection} onClick={() => navigate('/')}>
-          <Typography variant="h6" className={classes.title}>
-           MAP APP HCMUS
-          </Typography>
-        </Box>
+    <>
+      <AppBar position="fixed" className={classes.appBar}>
+        <Toolbar className={classes.toolbar}>
+          {/* Mobile Menu Button */}
+          <IconButton
+            edge="start"
+            color="inherit"
+            className={classes.mobileMenuButton}
+            onClick={() => setMobileMenuOpen(true)}
+          >
+            <MenuIcon />
+          </IconButton>
+
+          {/* Left Section: Logo & Title */}
+          <Box className={classes.logoSection} onClick={() => navigate('/')}>
+            <Typography variant="h6" className={classes.title}>
+             MAP APP HCMUS
+            </Typography>
+          </Box>
 
         {/* Center Section: Navigation Tabs */}
         <Box flexGrow={1} display="flex" justifyContent="center">
@@ -216,5 +268,125 @@ export default function Header({ darkMode, onToggleDarkMode }) {
         </Box>
       </Toolbar>
     </AppBar>
+
+    {/* Mobile Drawer Menu */}
+    <Drawer
+      anchor="left"
+      open={mobileMenuOpen}
+      onClose={() => setMobileMenuOpen(false)}
+      classes={{ paper: classes.drawerPaper }}
+    >
+      <Box style={{ padding: '16px 24px', borderBottom: '1px solid #e0e0e0' }}>
+        <Typography variant="h6" style={{ fontWeight: 700, color: '#0277BD' }}>
+           Menu
+        </Typography>
+      </Box>
+      
+      <List>
+        <ListItem
+          button
+          className={`${classes.drawerItem} ${tabValue === 0 ? classes.activeDrawerItem : ''}`}
+          onClick={() => {
+            navigate('/routes');
+            setMobileMenuOpen(false);
+          }}
+        >
+          <ListItemText primary=" Find Routes" />
+        </ListItem>
+        
+        <ListItem
+          button
+          className={`${classes.drawerItem} ${tabValue === 1 ? classes.activeDrawerItem : ''}`}
+          onClick={() => {
+            navigate('/busmap');
+            setMobileMenuOpen(false);
+          }}
+        >
+          <ListItemText primary=" Bus Map" />
+        </ListItem>
+        
+        <ListItem
+          button
+          className={`${classes.drawerItem} ${tabValue === 2 ? classes.activeDrawerItem : ''}`}
+          onClick={() => {
+            navigate('/cameras');
+            setMobileMenuOpen(false);
+          }}
+        >
+          <ListItemText primary=" Cameras Map" />
+        </ListItem>
+        
+        {username && (
+          <ListItem
+            button
+            className={`${classes.drawerItem} ${tabValue === 3 ? classes.activeDrawerItem : ''}`}
+            onClick={() => {
+              navigate('/history');
+              setMobileMenuOpen(false);
+            }}
+          >
+            <ListItemText primary=" History" />
+          </ListItem>
+        )}
+      </List>
+      
+      <Divider />
+      
+      <Box style={{ padding: '16px 24px' }}>
+        {username ? (
+          <Box>
+            <Typography variant="subtitle2" style={{ color: '#666', marginBottom: 8 }}>
+              Logged in as
+            </Typography>
+            <Box style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
+              <Avatar style={{ width: 32, height: 32, marginRight: 8, backgroundColor: '#FF8E53' }}>
+                {username[0].toUpperCase()}
+              </Avatar>
+              <Typography variant="body1" style={{ fontWeight: 600 }}>
+                {username}
+              </Typography>
+            </Box>
+            <Button
+              fullWidth
+              variant="outlined"
+              color="secondary"
+              onClick={() => {
+                handleLogout();
+                setMobileMenuOpen(false);
+              }}
+            >
+              Logout
+            </Button>
+          </Box>
+        ) : (
+          <Box>
+            <Button
+              fullWidth
+              variant="outlined"
+              color="primary"
+              style={{ marginBottom: 8 }}
+              onClick={() => {
+                navigate('/login');
+                setMobileMenuOpen(false);
+              }}
+            >
+              Login
+            </Button>
+            <Button
+              fullWidth
+              variant="contained"
+              style={{ backgroundColor: '#FF8E53', color: 'white' }}
+              onClick={() => {
+                navigate('/register');
+                setMobileMenuOpen(false);
+              }}
+            >
+              Sign Up
+            </Button>
+          </Box>
+        )}
+      </Box>
+    </Drawer>
+    </>
   );
 }

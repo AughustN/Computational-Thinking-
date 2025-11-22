@@ -6,12 +6,13 @@ const GOONG_MAPTILES_KEY = 'w6UXzsXLNcwmP5pRQdbHALGm2jK3nxj8OhNrJlQY';
 
 goongjs.accessToken = GOONG_MAPTILES_KEY;
 
-function GoongCameraMap({ cameras, onCameraClick, selectedCamera, style = 'goong_map_web' }) {
+function GoongCameraMap({ cameras, onCameraClick, selectedCamera, style = 'goong_map_web', userLocation }) {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const markers = useRef({});
   const currentPopup = useRef(null);
+  const userMarker = useRef(null);
   
   // Convert style ID to URL
   const getStyleUrl = (styleId) => {
@@ -172,6 +173,35 @@ function GoongCameraMap({ cameras, onCameraClick, selectedCamera, style = 'goong
     }, 1100);
 
   }, [mapLoaded, selectedCamera]);
+
+  // Handle user location
+  useEffect(() => {
+    if (!mapLoaded || !map.current || !userLocation) return;
+
+    // Remove old user marker
+    if (userMarker.current) {
+      userMarker.current.remove();
+    }
+
+    // Add marker with default style (blue color for user location)
+    const marker = new goongjs.Marker({ color: '#4285F4' })
+      .setLngLat([userLocation.lon, userLocation.lat])
+      .setPopup(
+        new goongjs.Popup({ offset: 25 }).setHTML(
+          '<div style="padding: 8px;"><strong>Vị trí của bạn</strong></div>'
+        )
+      )
+      .addTo(map.current);
+
+    userMarker.current = marker;
+
+    // Fly to user location
+    map.current.flyTo({
+      center: [userLocation.lon, userLocation.lat],
+      zoom: 15,
+      duration: 1500
+    });
+  }, [mapLoaded, userLocation]);
 
   return (
     <div 

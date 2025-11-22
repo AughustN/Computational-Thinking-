@@ -13,6 +13,7 @@ import { useLocation } from 'react-router-dom';
 
 import GoongMap from '../GoongMap';
 import GoongMapStyleControl from '../GoongMapStyleControl';
+import MyLocationControl from '../MyLocationControl';
 import SearchBoxRoutes from '../SearchBoxRoutes';
 import { saveLocation, saveRoute, getSavedLocations, getSavedRoutes, searchLocation, calculateRoute } from '../api';
 import dayjs from "dayjs";
@@ -189,6 +190,7 @@ function RoutesPage() {
     const [isSearchLocationSelected, setIsSearchLocationSelected] = useState(false);
     const [recentHistory, setRecentHistory] = useState({ locations: [], routes: [] });
     const [mapStyle, setMapStyle] = useState('goong_map_web');
+    const [userLocation, setUserLocation] = useState(null);
 
     /** 🔍 Search input change with debounce */
     const handleSearchChange = (e) => {
@@ -361,6 +363,12 @@ function RoutesPage() {
                     destination={selectPosition}
                     coords={coords}
                     style={mapStyle}
+                    userLocation={userLocation}
+                />
+                <MyLocationControl
+                    onLocationFound={(location) => {
+                        setUserLocation(location);
+                    }}
                 />
                 <GoongMapStyleControl
                     currentStyle={mapStyle}

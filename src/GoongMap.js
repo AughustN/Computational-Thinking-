@@ -6,7 +6,7 @@ const GOONG_MAPTILES_KEY = 'w6UXzsXLNcwmP5pRQdbHALGm2jK3nxj8OhNrJlQY';
 
 goongjs.accessToken = GOONG_MAPTILES_KEY;
 
-function GoongMap({ origin, destination, coords, style = 'goong_map_web' }) {
+function GoongMap({ origin, destination, coords, style = 'goong_map_web', userLocation }) {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -14,6 +14,7 @@ function GoongMap({ origin, destination, coords, style = 'goong_map_web' }) {
   // Markers refs
   const startMarker = useRef(null);
   const endMarker = useRef(null);
+  const userMarker = useRef(null);
   const routeLayer = useRef(null);
 
   // Initialize map
@@ -161,6 +162,36 @@ function GoongMap({ origin, destination, coords, style = 'goong_map_web' }) {
       map.current.flyTo({ center: [destination.lon, destination.lat], zoom: 14 });
     }
   }, [mapLoaded, origin, destination, coords]);
+
+  // Handle user location
+  useEffect(() => {
+    if (!mapLoaded || !map.current || !userLocation) return;
+
+    // Remove old user marker
+    if (userMarker.current) {
+      userMarker.current.remove();
+    }
+
+    // Add marker with default style (blue color for user location)
+    const marker = new goongjs.Marker({ color: '#4285F4' })
+      .setLngLat([userLocation.lon, userLocation.lat])
+      .setPopup(
+        new goongjs.Popup({ offset: 25 }).setHTML(
+          '<div style="padding: 8px;"><strong>Vị trí của bạn</strong></div>'
+        )
+      )
+      .addTo(map.current);
+
+    userMarker.current = marker;
+
+    // Fly to user location
+    map.current.flyTo({
+      center: [userLocation.lon, userLocation.lat],
+      zoom: 15,
+      duration: 1500
+    });
+
+  }, [mapLoaded, userLocation]);
 
   return (
     <div 

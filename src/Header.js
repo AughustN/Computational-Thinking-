@@ -258,7 +258,7 @@ export default function Header({ darkMode, onToggleDarkMode }) {
               <Button
                 variant="contained"
                 className={classes.authButton}
-                style={{ backgroundColor: '#FF8E53', color: 'white' }}
+                // style={{ backgroundColor: '#FF8E53', color: 'white' }}
                 onClick={() => navigate('/register')}
               >
                 Sign Up

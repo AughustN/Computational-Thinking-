@@ -230,7 +230,7 @@ export default function SearchBoxRoutes(props) {
             },
             (error) => {
                 console.error('Geolocation error:', error);
-                alert('Không thể lấy vị trí. Vui lòng cho phép truy cập vị trí.');
+                alert(`Không thể lấy vị trí. Vui lòng cho phép truy cập vị trí. ${error}`);
                 setGettingLocation(false);
             },
             {

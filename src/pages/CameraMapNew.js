@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import GoongCameraMap from '../GoongCameraMap';
 import GoongMapStyleControl from '../GoongMapStyleControl';
+import MyLocationControl from '../MyLocationControl';
 import cameraLocations from '../camera_locations.json';
 import { fetchCameraImages } from "../api";
 import '../css/CameraMap.css';
@@ -77,6 +78,7 @@ function CameraMapNew() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [mapStyle, setMapStyle] = useState('goong_map_web');
+  const [userLocation, setUserLocation] = useState(null);
 
   // Convert camera locations to array
   const cameras = useMemo(() => {
@@ -167,6 +169,12 @@ function CameraMapNew() {
           onCameraClick={handleCameraClick}
           selectedCamera={selectedCamera}
           style={mapStyle}
+          userLocation={userLocation}
+        />
+        <MyLocationControl
+          onLocationFound={(location) => {
+            setUserLocation(location);
+          }}
         />
         <GoongMapStyleControl
           currentStyle={mapStyle}

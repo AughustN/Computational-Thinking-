@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Grid, Paper, Card, CardContent, Typography, Chip, Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import Maps from '../Maps';
+import GoongBusMap from '../GoongBusMap';
 import SearchBoxBus from '../SearchBoxBus';
 
 const useStyles = makeStyles(theme => ({
@@ -169,7 +169,7 @@ function BusMapPage() {
         <Grid container style={{ height: '100%' }} spacing={0}>
           {/* Map Section */}
           <Grid item xs={12} md={7} className={classes.mapContainer}>
-            <Maps selectPosition={selectPosition} />
+            <GoongBusMap selectPosition={selectPosition} />
           </Grid>
 
           {/* Panel Section */}

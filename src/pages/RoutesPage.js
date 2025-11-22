@@ -10,7 +10,8 @@ import SearchIcon from '@material-ui/icons/Search';
 import LocationOnIcon from '@material-ui/icons/LocationOn';
 import { useLocation } from 'react-router-dom';
 
-import Maps from '../Maps';
+import GoongMap from '../GoongMap';
+import GoongMapStyleControl from '../GoongMapStyleControl';
 import SearchBoxRoutes from '../SearchBoxRoutes';
 import { saveLocation, saveRoute, getSavedLocations, getSavedRoutes, searchLocation, calculateRoute } from '../api';
 import dayjs from "dayjs";
@@ -143,6 +144,7 @@ function RoutesPage() {
     const [errorMessage, setErrorMessage] = useState('');
     const [isSearchLocationSelected, setIsSearchLocationSelected] = useState(false);
     const [recentHistory, setRecentHistory] = useState({ locations: [], routes: [] });
+    const [mapStyle, setMapStyle] = useState('goong_map_web');
 
     /** 🔍 Search input change with debounce */
     const handleSearchChange = (e) => {
@@ -299,10 +301,15 @@ function RoutesPage() {
         <Box className={classes.root}>
             {/* Full Screen Map */}
             <Box className={classes.mapContainer}>
-                <Maps
+                <GoongMap
                     origin={selectedLocation}
                     destination={selectPosition}
                     coords={coords}
+                    style={mapStyle}
+                />
+                <GoongMapStyleControl
+                    currentStyle={mapStyle}
+                    onStyleChange={setMapStyle}
                 />
             </Box>
 
@@ -397,6 +404,10 @@ function RoutesPage() {
                             initialFrom={selectedLocation?.name || ""}
                             travelMode={travelMode}
                             setTravelMode={setTravelMode}
+                            onFromLocationChange={(locationData) => {
+                                setSelectedLocation(locationData);
+                                setSearchInput(locationData.name);
+                            }}
                         />
 
                         {coords.length > 0 && distance !== null && duration !== null && (
@@ -410,12 +421,12 @@ function RoutesPage() {
                         {localStorage.getItem('token') && (
                             <Box style={{ marginTop: 24 }}>
                                 <Typography variant="h6" style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 8, color: '#0277BD' }}>
-                                    🕒 Lịch sử gần đây
+                                     Lịch sử gần đây
                                 </Typography>
 
                                 {recentHistory.locations.length > 0 && (
                                     <Box style={{ marginBottom: 16 }}>
-                                        <Typography variant="subtitle2" style={{ fontWeight: 'bold', color: '#666' }}>📍 Địa điểm</Typography>
+                                        <Typography variant="subtitle2" style={{ fontWeight: 'bold', color: '#666' }}> Địa điểm</Typography>
                                         <List dense>
                                             {recentHistory.locations.slice(0, 3).map((loc, i) => (
                                                 <ListItem key={i} button onClick={() => handleLocationSelect({
@@ -432,7 +443,7 @@ function RoutesPage() {
 
                                 {recentHistory.routes.length > 0 && (
                                     <Box>
-                                        <Typography variant="subtitle2" style={{ fontWeight: 'bold', color: '#666' }}>🛣️ Tuyến đường</Typography>
+                                        <Typography variant="subtitle2" style={{ fontWeight: 'bold', color: '#666' }}> Tuyến đường</Typography>
                                         <List dense>
                                             {recentHistory.routes.slice(0, 3).map((route, i) => (
                                                 <ListItem 

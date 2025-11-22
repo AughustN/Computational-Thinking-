@@ -75,28 +75,52 @@ const transportOptions = [
 ];
 
 export default function SearchBoxRoutes(props) {
-    const { setSelectPosition, onSearch, initialFrom = "", travelMode, setTravelMode } = props;
+    const { setSelectPosition, onSearch, initialFrom = "", travelMode, setTravelMode, onFromLocationChange } = props;
     const classes = useStyles();
 
     const [fromLocation, setFromLocation] = useState(initialFrom);
     const [toLocation, setToLocation] = useState("");
+    const [fromSearchResults, setFromSearchResults] = useState([]);
     const [toSearchResults, setToSearchResults] = useState([]);
+    const [showFromDropdown, setShowFromDropdown] = useState(false);
     const [showToDropdown, setShowToDropdown] = useState(false);
     const [selectedTransport, setSelectedTransport] = useState(travelMode || "car");
     const [searchError, setSearchError] = useState('');
-    const [isLocationSelected, setIsLocationSelected] = useState(false); // Track if location is selected
+    const [isToLocationSelected, setIsToLocationSelected] = useState(false);
+    const [isFromLocationSelected, setIsFromLocationSelected] = useState(false);
+    const [gettingLocation, setGettingLocation] = useState(false);
 
     // Update from location when initialFrom changes
     useEffect(() => {
         setFromLocation(initialFrom);
     }, [initialFrom]);
 
-    // Search destination with debounce
+    // Search FROM location with debounce
     useEffect(() => {
-        // Không tìm kiếm nếu đã chọn địa điểm
-        if (isLocationSelected) {
+        if (isFromLocationSelected) return;
+
+        if (!fromLocation.trim()) {
+            setShowFromDropdown(false);
+            setFromSearchResults([]);
             return;
         }
+
+        const timer = setTimeout(async () => {
+            try {
+                const data = await searchLocation(fromLocation);
+                setFromSearchResults(data);
+                setShowFromDropdown(true);
+            } catch (err) {
+                console.error("Search API Error:", err);
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [fromLocation, isFromLocationSelected]);
+
+    // Search TO location with debounce
+    useEffect(() => {
+        if (isToLocationSelected) return;
 
         if (!toLocation.trim()) {
             setShowToDropdown(false);
@@ -122,7 +146,26 @@ export default function SearchBoxRoutes(props) {
         }, 500);
 
         return () => clearTimeout(timer);
-    }, [toLocation, isLocationSelected]);
+    }, [toLocation, isToLocationSelected]);
+
+    const handleFromLocationSelect = (loc) => {
+        const pos = loc.position;
+        const locationData = {
+            lat: pos.lat,
+            lon: pos.lon,
+            name: loc.address.freeformAddress
+        };
+        
+        setFromLocation(loc.address.freeformAddress);
+        setShowFromDropdown(false);
+        setFromSearchResults([]);
+        setIsFromLocationSelected(true);
+        
+        // Notify parent component
+        if (onFromLocationChange) {
+            onFromLocationChange(locationData);
+        }
+    };
 
     const handleToLocationSelect = (loc) => {
         const pos = loc.position;
@@ -134,8 +177,68 @@ export default function SearchBoxRoutes(props) {
         setToLocation(loc.address.freeformAddress);
         setShowToDropdown(false);
         setSearchError('');
-        setToSearchResults([]); // Xóa kết quả tìm kiếm
-        setIsLocationSelected(true); // Đánh dấu đã chọn địa điểm
+        setToSearchResults([]);
+        setIsToLocationSelected(true);
+    };
+
+    // Get current location
+    const handleGetCurrentLocation = () => {
+        if (!navigator.geolocation) {
+            alert('Trình duyệt không hỗ trợ định vị');
+            return;
+        }
+
+        setGettingLocation(true);
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                
+                // Reverse geocode to get address
+                try {
+                    const response = await fetch(
+                        `https://rsapi.goong.io/Geocode?latlng=${latitude},${longitude}&api_key=WOh4DfxBHRZhUMufKtHKj4qXFb2RZu2vlatKPJpH`
+                    );
+                    const data = await response.json();
+                    
+                    const address = data.results?.[0]?.formatted_address || 'Vị trí hiện tại';
+                    
+                    setFromLocation(address);
+                    setIsFromLocationSelected(true);
+                    
+                    // Notify parent
+                    if (onFromLocationChange) {
+                        onFromLocationChange({
+                            lat: latitude,
+                            lon: longitude,
+                            name: address
+                        });
+                    }
+                } catch (err) {
+                    console.error('Reverse geocode error:', err);
+                    setFromLocation('Vị trí hiện tại');
+                    
+                    if (onFromLocationChange) {
+                        onFromLocationChange({
+                            lat: latitude,
+                            lon: longitude,
+                            name: 'Vị trí hiện tại'
+                        });
+                    }
+                }
+                
+                setGettingLocation(false);
+            },
+            (error) => {
+                console.error('Geolocation error:', error);
+                alert('Không thể lấy vị trí. Vui lòng cho phép truy cập vị trí.');
+                setGettingLocation(false);
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            }
+        );
     };
 
     const handleTransportChange = (value) => {
@@ -151,18 +254,67 @@ export default function SearchBoxRoutes(props) {
 
     return (
         <Box data-route="item" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            {/* From Location - Read Only */}
-            <Box>
+            {/* From Location - Editable */}
+            <Box style={{ position: 'relative' }}>
                 <Typography variant="subtitle2" style={{ marginBottom: "8px", fontWeight: "bold" }}>
                     Điểm đi
                 </Typography>
-                <OutlinedInput
-                    fullWidth
-                    placeholder="Chọn điểm bắt đầu từ bản đồ"
-                    value={fromLocation}
-                    disabled
-                    style={{ backgroundColor: "#f9f9f9" }}
-                />
+                <Box style={{ display: 'flex', gap: '8px' }}>
+                    <OutlinedInput
+                        fullWidth
+                        placeholder="Nhập địa chỉ xuất phát"
+                        value={fromLocation}
+                        onChange={(e) => {
+                            setFromLocation(e.target.value);
+                            setIsFromLocationSelected(false);
+                        }}
+                        onFocus={() => {
+                            if (fromLocation && !isFromLocationSelected) {
+                                setShowFromDropdown(true);
+                            }
+                        }}
+                        onBlur={() => {
+                            setTimeout(() => setShowFromDropdown(false), 200);
+                        }}
+                        style={{ backgroundColor: "#f9f9f9" }}
+                    />
+                    <Button
+                        variant="outlined"
+                        color="primary"
+                        onClick={handleGetCurrentLocation}
+                        disabled={gettingLocation}
+                        style={{ minWidth: '50px', padding: '8px' }}
+                        title="Lấy vị trí hiện tại"
+                    >
+                        {gettingLocation ? '⏳' : '📍'}
+                    </Button>
+                </Box>
+
+                {/* Dropdown FROM location */}
+                {showFromDropdown && fromSearchResults.length > 0 && (
+                    <Paper className={classes.searchDropdown}>
+                        <List style={{ padding: 0 }}>
+                            {fromSearchResults.map((location, i) => (
+                                <ListItem
+                                    key={i}
+                                    className={classes.listItem}
+                                    onMouseDown={(e) => {
+                                        e.preventDefault();
+                                        handleFromLocationSelect(location);
+                                    }}
+                                >
+                                    <ListItemIcon style={{ minWidth: 40 }}>
+                                        <LocationOnIcon style={{ color: '#0277BD' }} />
+                                    </ListItemIcon>
+                                    <ListItemText
+                                        primary={location.address.freeformAddress}
+                                        secondary={location.poi?.name}
+                                    />
+                                </ListItem>
+                            ))}
+                        </List>
+                    </Paper>
+                )}
             </Box>
 
             {/* To Location - Searchable */}
@@ -176,10 +328,10 @@ export default function SearchBoxRoutes(props) {
                     value={toLocation}
                     onChange={(e) => {
                         setToLocation(e.target.value);
-                        setIsLocationSelected(false); // Reset khi người dùng typing
+                        setIsToLocationSelected(false);
                     }}
                     onFocus={() => {
-                        if (toLocation && !isLocationSelected) {
+                        if (toLocation && !isToLocationSelected) {
                             setShowToDropdown(true);
                         }
                     }}

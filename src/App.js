@@ -5,7 +5,7 @@ import Header from './Header';
 import HistoryPage from './pages/HistoryPage';
 import RoutesPage from "./pages/RoutesPage";
 import BusMapPage from "./pages/BusMapPage";
-import CameraMap from "./pages/CameraMap";
+import CameraMapNew from "./pages/CameraMapNew";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { Box } from "@material-ui/core";
@@ -155,7 +155,7 @@ function App() {
               <Route path="/" element={<RoutesPage darkMode={darkMode} />} />
               <Route path="/routes" element={<RoutesPage darkMode={darkMode} />} />
               <Route path="/busmap" element={<BusMapPage darkMode={darkMode} />} />
-              <Route path="/cameras" element={<CameraMap />} />
+              <Route path="/cameras" element={<CameraMapNew />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/history" element={<HistoryPage />} />

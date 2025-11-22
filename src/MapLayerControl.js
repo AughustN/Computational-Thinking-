@@ -1,73 +1,105 @@
-import React from 'react';
-import { TileLayer, LayersControl, LayerGroup } from 'react-leaflet';
+import React, { useEffect } from 'react';
+import { TileLayer, LayersControl, LayerGroup, useMap } from 'react-leaflet';
+import L from 'leaflet';
 import './css/MapLayerControl.css';
 
 const { BaseLayer } = LayersControl;
+const GOONG_API_KEY = 'WOXLNJwS4RZLxLmxLGKTa4gu0p8UrBKcRBOg1Xqy';
+const GOONG_MAPTILES_KEY = 'w6UXzsXLNcwmP5pRQdbHALGm2jK3nxj8OhNrJlQY';
+
+/**
+ * Goong Map Vector Layer Component
+ */
+function GoongVector({ styleUrl, name }) {
+    const map = useMap();
+
+    useEffect(() => {
+        if (!map || !window.L.maplibreGL) {
+            console.warn('MapLibre GL not loaded');
+            return;
+        }
+
+        const vectorLayer = L.maplibreGL({
+            style: styleUrl,
+            attribution: '&copy; <a href="https://goong.io">Goong</a>'
+        });
+
+        vectorLayer.addTo(map);
+
+        return () => {
+            if (map.hasLayer(vectorLayer)) {
+                map.removeLayer(vectorLayer);
+            }
+        };
+    }, [map, styleUrl]);
+
+    return null;
+}
 
 /**
  * MapLayerControl - Component để chuyển đổi giữa các loại bản đồ
- * Hỗ trợ: OpenStreetMap, Satellite, Terrain, Dark Mode
+ * Hỗ trợ: Goong Map Vector, Raster, Satellite, Terrain
  */
 function MapLayerControl() {
     console.log('MapLayerControl rendered');
 
     return (
         <LayersControl position="topright">
-            {/* OpenStreetMap - Map thường */}
-            <BaseLayer checked name="Bản đồ thường">
+            {/* Goong Map - Raster (Default - Always works) */}
+            <BaseLayer checked name="🗺️ Goong Map">
                 <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://goong.io">Goong</a>'
+                    url={`https://tiles.goong.io/{z}/{x}/{y}.png?api_key=${GOONG_MAPTILES_KEY}`}
+                    maxZoom={20}
+                />
+            </BaseLayer>
+
+            {/* Goong Vector - Default */}
+            <BaseLayer name="🗺️ Goong Vector">
+                <GoongVector 
+                    styleUrl={`https://tiles.goong.io/assets/goong_map_web.json?api_key=${GOONG_MAPTILES_KEY}`}
+                    name="Goong Vector"
+                />
+            </BaseLayer>
+
+            {/* Goong Light V2 */}
+            <BaseLayer name="☀️ Goong Light">
+                <GoongVector 
+                    styleUrl={`https://tiles.goong.io/assets/goong_light_v2.json?api_key=${GOONG_MAPTILES_KEY}`}
+                    name="Goong Light"
+                />
+            </BaseLayer>
+
+            {/* Goong Dark */}
+            <BaseLayer name="🌙 Goong Dark">
+                <GoongVector 
+                    styleUrl={`https://tiles.goong.io/assets/goong_map_dark.json?api_key=${GOONG_MAPTILES_KEY}`}
+                    name="Goong Dark"
+                />
+            </BaseLayer>
+
+            {/* Goong Navigation Day */}
+            <BaseLayer name="🚗 Navigation Day">
+                <GoongVector 
+                    styleUrl={`https://tiles.goong.io/assets/navigation_day.json?api_key=${GOONG_MAPTILES_KEY}`}
+                    name="Navigation Day"
+                />
+            </BaseLayer>
+
+            {/* Goong Navigation Night */}
+            <BaseLayer name="🌃 Navigation Night">
+                <GoongVector 
+                    styleUrl={`https://tiles.goong.io/assets/navigation_night.json?api_key=${GOONG_MAPTILES_KEY}`}
+                    name="Navigation Night"
                 />
             </BaseLayer>
 
             {/* Satellite - Map vệ tinh */}
-            <BaseLayer name="Vệ tinh">
+            <BaseLayer name="🛰️ Vệ tinh">
                 <TileLayer
-                    attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+                    attribution='Tiles &copy; Esri'
                     url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-                />
-            </BaseLayer>
-
-            {/* Satellite with Labels - Vệ tinh có nhãn */}
-            <BaseLayer name="Vệ tinh + Nhãn">
-                <LayerGroup>
-                    {/* Satellite */}
-                    <TileLayer
-                        attribution='Tiles &copy; Esri &mdash; Source: Esri, USDA, USGS, GeoEye...'
-                        url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-                    />
-
-                    {/* Labels (OSM road + place names) */}
-                    <TileLayer
-                        attribution='&copy; OpenStreetMap contributors'
-                        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        opacity={0.35}   // độ trong suốt để overlay
-                    />
-                </LayerGroup>
-            </BaseLayer>
-
-            {/* Terrain - Bản đồ địa hình */}
-            <BaseLayer name="Địa hình">
-                <TileLayer
-                    attribution='&copy; <a href="https://opentopomap.org">OpenTopoMap</a> &mdash; Map data &copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>'
-                    url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
-                />
-            </BaseLayer>
-
-            {/* Dark Mode - Bản đồ tối */}
-            <BaseLayer name="Chế độ tối">
-                <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                    url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                />
-            </BaseLayer>
-
-            {/* Light Mode - Bản đồ sáng (minimal) */}
-            <BaseLayer name="Chế độ sáng">
-                <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                    url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                    maxZoom={19}
                 />
             </BaseLayer>
         </LayersControl>

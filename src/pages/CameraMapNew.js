@@ -1,67 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { MapContainer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import '../css/CameraMap.css';
-import MapLayerControl from '../MapLayerControl';
-
-// Import camera locations
+import React, { useState, useEffect, useMemo } from 'react';
+import GoongCameraMap from '../GoongCameraMap';
+import GoongMapStyleControl from '../GoongMapStyleControl';
 import cameraLocations from '../camera_locations.json';
 import { fetchCameraImages } from "../api";
-
-// Custom camera icon
-const cameraSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#2196F3">
-  <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
-</svg>`;
-
-const cameraIcon = new L.Icon({
-  iconUrl: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(cameraSvg),
-  iconSize: [32, 32],
-  iconAnchor: [16, 32],
-  popupAnchor: [0, -32]
-});
-
-// Component to handle map centering
-function MapCenter({ center, zoom = 16 }) {
-  const map = useMap();
-
-  useEffect(() => {
-    if (center) {
-      map.setView(center, zoom, { animate: true, duration: 0.5 });
-    }
-  }, [center, zoom, map]);
-
-  return null;
-}
-
-// Component to handle marker with auto popup
-function CameraMarker({ camera, icon, onCameraClick, shouldOpenPopup }) {
-  const markerRef = React.useRef(null);
-
-  useEffect(() => {
-    if (shouldOpenPopup && markerRef.current) {
-      markerRef.current.openPopup();
-    }
-  }, [shouldOpenPopup]);
-
-  return (
-    <Marker
-      ref={markerRef}
-      position={[camera.lat, camera.lon]}
-      icon={icon}
-      eventHandlers={{
-        click: () => onCameraClick(camera)
-      }}
-    >
-      <Popup maxWidth={400} minWidth={300}>
-        <CameraPopup
-          cameraId={camera.id}
-          cameraName={camera.camera_name}
-        />
-      </Popup>
-    </Marker>
-  );
-}
+import '../css/CameraMap.css';
 
 // Component to display camera images
 function CameraPopup({ cameraId, cameraName }) {
@@ -75,9 +17,7 @@ function CameraPopup({ cameraId, cameraName }) {
       try {
         setLoading(true);
         setError(null);
-
         const imageUrls = await fetchCameraImages(cameraId);
-
         setImages(imageUrls);
         setLoading(false);
       } catch (err) {
@@ -132,17 +72,16 @@ function CameraPopup({ cameraId, cameraName }) {
   );
 }
 
-
-function CameraMap() {
+function CameraMapNew() {
   const [selectedCamera, setSelectedCamera] = useState(null);
-  const [mapCenter, setMapCenter] = useState([10.762622, 106.660172]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
-  const [triggerPopup, setTriggerPopup] = useState(null);
+  const [mapStyle, setMapStyle] = useState('goong_map_web');
 
-  const cameras = React.useMemo(() => {
+  // Convert camera locations to array
+  const cameras = useMemo(() => {
     return Object.entries(cameraLocations)
-      .filter(([id, data]) => data.lat !== null && data.lon !== null)
+      .filter(([, data]) => data.lat !== null && data.lon !== null)
       .map(([id, data]) => ({
         id,
         ...data
@@ -171,12 +110,6 @@ function CameraMap() {
 
   const handleCameraClick = (camera) => {
     setSelectedCamera(camera);
-    setMapCenter([camera.lat, camera.lon]);
-    
-    setTriggerPopup(null);
-    setTimeout(() => {
-      setTriggerPopup(camera.id);
-    }, 500);
   };
 
   return (
@@ -228,28 +161,17 @@ function CameraMap() {
         </div>
       </div>
 
-      <div className="map-wrapper">
-        <MapContainer
-          center={mapCenter}
-          zoom={13}
-          style={{ height: '100%', width: '100%' }}
-        >
-          <MapLayerControl />
-
-          <MapCenter center={mapCenter} zoom={16} />
-
-          {filteredCameras.map((camera) => (
-            camera.lat && camera.lon && (
-              <CameraMarker
-                key={camera.id}
-                camera={camera}
-                icon={cameraIcon}
-                onCameraClick={handleCameraClick}
-                shouldOpenPopup={triggerPopup === camera.id}
-              />
-            )
-          ))}
-        </MapContainer>
+      <div className="map-wrapper" style={{ position: 'relative' }}>
+        <GoongCameraMap
+          cameras={filteredCameras}
+          onCameraClick={handleCameraClick}
+          selectedCamera={selectedCamera}
+          style={mapStyle}
+        />
+        <GoongMapStyleControl
+          currentStyle={mapStyle}
+          onStyleChange={setMapStyle}
+        />
       </div>
 
       {selectedCamera && (
@@ -263,10 +185,15 @@ function CameraMap() {
           <h3>{selectedCamera.camera_name}</h3>
           <p><strong>Địa điểm:</strong> {selectedCamera.display_name}</p>
           <p><strong>Tọa độ:</strong> {selectedCamera.lat.toFixed(6)}, {selectedCamera.lon.toFixed(6)}</p>
+          
+          <CameraPopup
+            cameraId={selectedCamera.id}
+            cameraName={selectedCamera.camera_name}
+          />
         </div>
       )}
     </div>
   );
 }
 
-export default CameraMap;
+export default CameraMapNew;

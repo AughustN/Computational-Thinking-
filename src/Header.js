@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
-    background: "linear-gradient(135deg, #1a237e 0%, #283593 100%)", // Darker, more professional blue
+    background: "linear-gradient(135deg, #ffffffff 0%, #a5a6afff 100%)", // Darker, more professional blue
     boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
   },
   toolbar: {
@@ -139,7 +139,7 @@ export default function Header({ darkMode, onToggleDarkMode }) {
         {/* Left Section: Logo & Title */}
         <Box className={classes.logoSection} onClick={() => navigate('/')}>
           <Typography variant="h6" className={classes.title}>
-            Unified Mobility
+           MAP APP HCMUS
           </Typography>
         </Box>
 
